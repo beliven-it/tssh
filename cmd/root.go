@@ -1,12 +1,12 @@
 /*
 Copyright © 2023 Beliven
-
 */
 package cmd
 
 import (
 	"fmt"
 	"os"
+	"tssh/defs"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,11 +45,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tssh.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/config.yml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -58,14 +54,10 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
 		// Search config in home directory with name ".tssh" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".tssh")
+		viper.AddConfigPath(defs.ConfigFolderPath)
+		viper.SetConfigType(defs.ConfigFileExtension)
+		viper.SetConfigName(defs.ConfigFileName)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
