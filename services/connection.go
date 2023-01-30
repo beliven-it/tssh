@@ -2,6 +2,7 @@ package services
 
 import (
 	"strings"
+	"tssh/defs"
 	"tssh/interfaces"
 	"tssh/types"
 	"tssh/utils"
@@ -20,10 +21,15 @@ type Connection interface {
 
 func (s *connection) listConnectionsForSysadminUsers(list []string) ([]types.TsshConnection, error) {
 	connections := []types.TsshConnection{}
+	user := viper.GetString(defs.ConfigKeyAdminUser)
+	if user == "" {
+		user = "root"
+	}
+
 	for _, element := range list {
 		connections = append(connections, types.TsshConnection{
 			Host: element,
-			User: "root",
+			User: user,
 		})
 	}
 
@@ -53,7 +59,7 @@ func (s *connection) ListConnections() ([]types.TsshConnection, error) {
 		return nil, err
 	}
 
-	if utils.InSlice(viper.GetString("privileged_role"), roles) {
+	if utils.InSlice(viper.GetString(defs.ConfigKeyAdminRole), roles) {
 		hosts, err := s.goteleport.ListHosts()
 		if err != nil {
 			return nil, err
