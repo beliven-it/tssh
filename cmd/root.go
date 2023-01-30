@@ -6,11 +6,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"tssh/defs"
+	"tssh/services"
 	"tssh/utils"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -59,15 +58,6 @@ func initConfig() {
 		os.Exit(1)
 	}
 
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Search config in home directory with name ".tssh" (without extension).
-		viper.AddConfigPath(defs.ConfigFolderPath)
-		viper.SetConfigType(defs.ConfigFileExtension)
-		viper.SetConfigName(defs.ConfigFileName)
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
+	configService := services.NewConfigService()
+	configService.Load(cfgFile)
 }
