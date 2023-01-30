@@ -16,7 +16,7 @@ type config struct {
 
 type Config interface {
 	IsInitialized() bool
-	Load() error
+	Load(string) error
 	Init() error
 }
 
@@ -30,8 +30,11 @@ func (s *config) IsInitialized() bool {
 	return string(h.Sum(file)) != string(h.Sum([]byte(templates.Config)))
 }
 
-func (s *config) Load() error {
-	viper.SetConfigFile(defs.ConfigFilePath)
+func (s *config) Load(filePath string) error {
+	if filePath == "" {
+		filePath = defs.ConfigFilePath
+	}
+	viper.SetConfigFile(filePath)
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
@@ -61,7 +64,7 @@ func (s *config) Init() error {
 			return err
 		}
 
-		s.Load()
+		s.Load("")
 		return nil
 	} else {
 		return err

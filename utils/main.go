@@ -20,6 +20,16 @@ func Which(command string) string {
 	return string(response)
 }
 
+func InSlice(value string, values []string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+
+	return false
+}
+
 func ExecFZF(context string) string {
 	cmdOptions := viper.GetString("fzf_options")
 	cmdOutput := &bytes.Buffer{}

@@ -6,6 +6,14 @@ type GoteleportActive struct {
 	Logins   []string `json:"logins"`
 }
 
+type GoteleportNodeSpec struct {
+	Hostname string
+}
+
+type GoteleportNode struct {
+	Spec GoteleportNodeSpec
+}
+
 type GoteleportCMDStatus struct {
 	Active GoteleportActive `json:"active"`
 }
