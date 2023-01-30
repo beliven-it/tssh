@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+tssh
 
 # Test binary, built with `go test -c`
 *.test
@@ -17,3 +18,4 @@
 # Editors
 .idea
 .DS_Store
+
