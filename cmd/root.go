@@ -14,10 +14,15 @@ import (
 
 var cfgFile string
 
+// Version of the app provided
+// in build phase
+var Version string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "tssh",
-	Short: "A brief description of your application",
+	Use:     "tssh",
+	Version: Version,
+	Short:   "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
 

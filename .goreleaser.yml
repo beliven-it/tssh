@@ -1,0 +1,36 @@
+builds:
+  -
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser -X tssh/cmd.Version={{.Tag}}
+
+brews:
+  -
+    name: tssh@{{.Version}}
+    tap:
+      owner: beliven-it
+      name: homebrew-tap
+    folder: Formula
+    caveats: "Run `tssh init` to generate config file inside\n
+      `~/.config/tssh/config.yml` (works only if not exists yet)\n
+      or let the CLI creating it automatically on first run (every command).\n
+      \n
+      Type `tssh help` for further information."
+    description: "A CLI to easily list, search and connect to Goleport nodes"
+    license: "MIT"
+    dependencies:
+      - name: fzf
+  -
+    name: tssh
+    tap:
+      owner: beliven-it
+      name: homebrew-tap
+    folder: Formula
+    caveats: "Run `tssh init` to generate config file inside\n
+      `~/.config/tssh/config.yml` (works only if not exists yet)\n
+      or let the CLI creating it automatically on first run (every command).\n
+      \n
+      Type `tssh help` for further information."
+    description: "A CLI to easily sync, list, search and connect to Goleport nodes"
+    license: "MIT"
+    dependencies:
+      - name: fzf
