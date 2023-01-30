@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"tssh/defs"
+	"tssh/utils"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,13 +23,8 @@ var Version string
 var rootCmd = &cobra.Command{
 	Use:     "tssh",
 	Version: Version,
-	Short:   "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short:   "A CLI to easily sync, list, search and connect to Goteleport nodes",
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -55,6 +51,14 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
+	if utils.Which("tsh") == "" {
+		fmt.Println("Missing tsh executable")
+		fmt.Println("Please follow the instructions for install the binaries here:")
+		fmt.Print("\nhttps://goteleport.com/download/\n\n")
+		os.Exit(1)
+	}
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -66,9 +70,4 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
 }

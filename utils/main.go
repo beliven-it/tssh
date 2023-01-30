@@ -11,6 +11,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+func Which(command string) string {
+	response, err := Exec("which", command)
+	if err != nil {
+		return ""
+	}
+
+	return string(response)
+}
+
 func ExecFZF(context string) string {
 	cmdOptions := viper.GetString("fzf_options")
 	cmdOutput := &bytes.Buffer{}
