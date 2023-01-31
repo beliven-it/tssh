@@ -59,7 +59,10 @@ func (s *connection) ListConnections() ([]types.TsshConnection, error) {
 		return nil, err
 	}
 
-	if utils.InSlice(viper.GetString(defs.ConfigKeyAdminRole), roles) {
+	adminRole := viper.GetString(defs.ConfigKeyAdminRole)
+	haveAdminRole := utils.InSlice(adminRole, roles)
+
+	if adminRole != "" && haveAdminRole {
 		hosts, err := s.goteleport.ListHosts()
 		if err != nil {
 			return nil, err
