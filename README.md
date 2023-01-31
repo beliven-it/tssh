@@ -44,6 +44,27 @@ This is a complete config file example with two providers:
 ```yaml
 # TSSH configuration file
 fzf_options: "-i"
+
+# Admin users can be identifier by a role.
+# For security reasons this role is default set to empty.
+# If you are a admin user, set these values below.
+# 
+# When a user have the role declared the system force the 
+# user to connect with a specific privileged user defined by 
+# the admin_user variable.
+#
+# example:
+#
+# admin_role: "sysadmin"
+# admin_user: "root"
+#
+# launching tssh c the results are a list of the host the user can connect
+# and instead to use the role convension host.user, the user will be replaced
+# by root value.
+admin_role: "<YOUR PRIVILEGED ROLE IDENTIFIER>"
+
+# The privileged user. Usually is root
+admin_user: "root"
 ```
 
 ## Usage
