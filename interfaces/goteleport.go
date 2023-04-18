@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"regexp"
+	"tssh/defs"
 	"tssh/types"
 	"tssh/utils"
 )
@@ -25,15 +26,15 @@ type Goteleport interface {
 	Connect(string) error
 }
 
-func (t *goteleport) includeSSHConfig(configPath string) error {
-	file, err := os.OpenFile(configPath, os.O_RDWR, 0777)
+func (t *goteleport) includeSSHConfig() error {
+	file, err := os.OpenFile(defs.ConfigSSHMainPath, os.O_RDWR, 0777)
 	if err != nil {
 		return err
 	}
 
 	defer file.Close()
 
-	oldContent, err := os.ReadFile(configPath)
+	oldContent, err := os.ReadFile(defs.ConfigSSHMainPath)
 	if err != nil {
 		return err
 	}
@@ -42,9 +43,9 @@ func (t *goteleport) includeSSHConfig(configPath string) error {
 
 	delimiterStart := "# TSSH start managed"
 	delimiterEnd := "# TSSH end managed"
-	includeString := "Include tssh.config"
+	includeString := "Include " + defs.ConfigSSHAppName
 
-	checker := regexp.MustCompile("tssh.config")
+	checker := regexp.MustCompile(defs.ConfigSSHAppName)
 	hasReference := checker.MatchString(oldContentToString)
 
 	var row = delimiterStart + "\n" + includeString + "\n" + delimiterEnd + "\n\n"
@@ -128,18 +129,13 @@ func (t *goteleport) CreateSshConfig() error {
 	replaceRule := regexp.MustCompile("%r@%h:%p")
 	outputAsString = replaceRule.ReplaceAllString(outputAsString, "%r@%n:%p")
 
-	// Print the configuration inside the user ssh config file
-	homeFolder, _ := os.UserHomeDir()
-	sshConfigAppFile := homeFolder + "/.ssh/tssh.config"
-	sshConfigMainFile := homeFolder + "/.ssh/config"
-
-	err = os.WriteFile(sshConfigAppFile, []byte(outputAsString), 0600)
+	err = os.WriteFile(defs.ConfigSSHAppPath, []byte(outputAsString), 0600)
 	if err != nil {
 		return err
 	}
 
 	// Add the refernce of the file created in main ssh config
-	t.includeSSHConfig(sshConfigMainFile)
+	t.includeSSHConfig()
 
 	return nil
 }
