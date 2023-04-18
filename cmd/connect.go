@@ -18,7 +18,17 @@ import (
 var connectCmd = &cobra.Command{
 	Use:     "connect",
 	Aliases: []string{"c"},
-	Short:   "Connect through your goteleport remote nodes",
+	Example: `
+Connect to a node
+tssh c
+
+Connect to a node using the local authentication 
+tssh c --auth local
+
+Connect to a node using the passwordless authentication 
+tssh c --auth passwordless
+`,
+	Short: "Connect through your goteleport remote nodes",
 	Long: `This command allow you to search through a fuzzy search interface
 the node you want connect.	
 `,
@@ -26,7 +36,7 @@ the node you want connect.
 		connectionService, err := services.NewConnectionService(
 			viper.GetString(defs.ConfigKeyTeleportUser),
 			viper.GetString(defs.ConfigKeyTeleportProxy),
-			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
+			usePasswordless,
 		)
 
 		if err != nil {

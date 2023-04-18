@@ -6,13 +6,17 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"tssh/defs"
 	"tssh/services"
 	"tssh/utils"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var auth string
+var usePasswordless bool
 
 // Version of the app provided
 // in build phase
@@ -46,6 +50,20 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/config.yml)")
+
+	// Define the auth flag
+	rootCmd.PersistentFlags().StringVar(&auth, "auth", "", "The auth method to use. Default is local")
+
+	// Get the bool auth
+	usePasswordless = viper.GetBool(defs.ConfigKeyTeleportPasswordless)
+
+	if auth == "local" {
+		usePasswordless = false
+	}
+
+	if auth == "passwordless" {
+		usePasswordless = true
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.

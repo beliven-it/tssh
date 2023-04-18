@@ -18,14 +18,23 @@ import (
 var listCmd = &cobra.Command{
 	Use:     "list",
 	Aliases: []string{"l"},
-	Short:   "List your remote nodes",
-	Long:    `This command allow you to list all nodes you can access`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Example: `
+List the nodes
+tssh l
 
+List the nodes using the local authentication 
+tssh l --auth local
+
+List the nodes using the passwordless authentication 
+tssh l --auth passwordless
+`,
+	Short: "List your remote nodes",
+	Long:  `This command allow you to list all nodes you can access`,
+	Run: func(cmd *cobra.Command, args []string) {
 		connectionService, err := services.NewConnectionService(
 			viper.GetString(defs.ConfigKeyTeleportUser),
 			viper.GetString(defs.ConfigKeyTeleportProxy),
-			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
+			usePasswordless,
 		)
 
 		if err != nil {

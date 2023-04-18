@@ -166,6 +166,12 @@ func (t *goteleport) Logout() error {
 	return utils.ExecDevNull("tsh", "logout")
 }
 
+func NewGoteleportNotAuthInterface() Goteleport {
+	i := goteleport{}
+
+	return &i
+}
+
 func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, error) {
 	i := goteleport{
 		user:         user,

@@ -4,13 +4,9 @@ Copyright © 2023 Beliven
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"tssh/defs"
 	"tssh/interfaces"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // listCmd represents the list command
@@ -20,18 +16,7 @@ var logoutCmd = &cobra.Command{
 	Short:   "Logout from all clusters",
 	Long:    `This command allow you to logout from the cluster`,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		goteleportService, err := interfaces.NewGoteleportInterface(
-			viper.GetString(defs.ConfigKeyTeleportUser),
-			viper.GetString(defs.ConfigKeyTeleportProxy),
-			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
-		)
-
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-
+		goteleportService := interfaces.NewGoteleportNotAuthInterface()
 		goteleportService.Logout()
 	},
 }

@@ -32,7 +32,7 @@ var initCmd = &cobra.Command{
 		goteleport, err := interfaces.NewGoteleportInterface(
 			viper.GetString(defs.ConfigKeyTeleportUser),
 			viper.GetString(defs.ConfigKeyTeleportProxy),
-			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
+			usePasswordless,
 		)
 
 		if err != nil {
