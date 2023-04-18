@@ -5,9 +5,12 @@ package cmd
 
 import (
 	"fmt"
+	"tssh/defs"
+	"tssh/interfaces"
 	"tssh/services"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // initCmd represents the init command
@@ -21,7 +24,26 @@ var initCmd = &cobra.Command{
 
 		err := configService.Init()
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
+			return
+		}
+
+		// Initialize the configuration of ssh
+		goteleport, err := interfaces.NewGoteleportInterface(
+			viper.GetString(defs.ConfigKeyTeleportUser),
+			viper.GetString(defs.ConfigKeyTeleportProxy),
+			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
+		)
+
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+
+		err = goteleport.CreateSshConfig()
+		if err != nil {
+			fmt.Println(err.Error())
+			return
 		}
 	},
 }

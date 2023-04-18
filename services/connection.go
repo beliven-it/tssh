@@ -23,7 +23,7 @@ func (s *connection) listConnectionsForSysadminUsers(list []string) ([]types.Tss
 	connections := []types.TsshConnection{}
 	user := viper.GetString(defs.ConfigKeyAdminUser)
 	if user == "" {
-		user = "root"
+		user = defs.DefaultTSHRole
 	}
 
 	for _, element := range list {
@@ -62,24 +62,56 @@ func (s *connection) ListConnections() ([]types.TsshConnection, error) {
 	adminRole := viper.GetString(defs.ConfigKeyAdminRole)
 	haveAdminRole := utils.InSlice(adminRole, roles)
 
+	sysadminConnections := []types.TsshConnection{}
+
 	if adminRole != "" && haveAdminRole {
 		hosts, err := s.goteleport.ListHosts()
 		if err != nil {
 			return nil, err
 		}
 
-		return s.listConnectionsForSysadminUsers(hosts)
-	} else {
-		return s.listConnectionsForUsers(roles)
+		connections, err := s.listConnectionsForSysadminUsers(hosts)
+		if err != nil {
+			return connections, err
+		}
+
+		sysadminConnections = connections
 	}
+
+	normalConnections, err := s.listConnectionsForUsers(roles)
+
+	connections := append(sysadminConnections, normalConnections...)
+
+	uniqueConnections := []types.TsshConnection{}
+	for _, connection := range connections {
+		match := false
+
+		for _, uc := range uniqueConnections {
+			if uc.Host == connection.Host && uc.User == connection.User {
+				match = true
+			}
+		}
+
+		if !match {
+			uniqueConnections = append(uniqueConnections, connection)
+		}
+	}
+
+	return uniqueConnections, err
 }
 
 func (s *connection) Connect(connection string) error {
 	return s.goteleport.Connect(connection)
 }
 
-func NewConnectionService() Connection {
+func NewConnectionService(user, proxy string, passwordless bool) (Connection, error) {
+	goteleport, err := interfaces.NewGoteleportInterface(
+		user,
+		proxy,
+		passwordless,
+	)
+
 	return &connection{
-		goteleport: interfaces.NewGoteleportInterface(),
-	}
+		goteleport: goteleport,
+	}, err
 }

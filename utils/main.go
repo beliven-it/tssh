@@ -81,3 +81,17 @@ func ExecStdout(command string, args ...string) error {
 
 	return nil
 }
+
+func ExecDevNull(command string, args ...string) error {
+	c := exec.Command(command, args...)
+	c.Stdout = nil
+	c.Stderr = os.Stderr
+	c.Stdin = os.Stdin
+
+	err := c.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -6,10 +6,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"tssh/defs"
 	"tssh/presenters"
 	"tssh/services"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // connectCmd represents the connect command
@@ -21,7 +23,17 @@ var connectCmd = &cobra.Command{
 the node you want connect.	
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		connectionService := services.NewConnectionService()
+		connectionService, err := services.NewConnectionService(
+			viper.GetString(defs.ConfigKeyTeleportUser),
+			viper.GetString(defs.ConfigKeyTeleportProxy),
+			viper.GetBool(defs.ConfigKeyTeleportPasswordless),
+		)
+
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
 		connectionPresenter := presenters.NewConnectionPresenter()
 
 		list, err := connectionService.ListConnections()
@@ -31,10 +43,15 @@ the node you want connect.
 		}
 
 		selection := connectionPresenter.Fzf(list)
+		if selection == "" {
+			fmt.Println("no connection selected")
+			return
+		}
 
 		err = connectionService.Connect(selection)
 		if err != nil {
-			fmt.Println("B", err)
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
 	},
 }

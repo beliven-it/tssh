@@ -18,6 +18,12 @@ var ConfigKeyAdminUser = "admin_user"
 
 var ConfigKeyAdminRole = "admin_role"
 
+var ConfigKeyTeleportProxy = "teleport_proxy"
+
+var ConfigKeyTeleportUser = "teleport_user"
+
+var ConfigKeyTeleportPasswordless = "teleport_passwordless"
+
 var HomePath = getHomePath()
 
 var ConfigFolderName = "tssh"
@@ -29,3 +35,5 @@ var ConfigFileExtension = "yml"
 var ConfigFolderPath = fmt.Sprintf("%s/.config/%s", HomePath, ConfigFolderName)
 
 var ConfigFilePath = fmt.Sprintf("%s/%s.%s", ConfigFolderPath, ConfigFileName, ConfigFileExtension)
+
+const DefaultTSHRole = "root"
