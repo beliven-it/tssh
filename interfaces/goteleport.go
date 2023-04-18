@@ -135,9 +135,7 @@ func (t *goteleport) CreateSshConfig() error {
 	}
 
 	// Add the refernce of the file created in main ssh config
-	t.includeSSHConfig()
-
-	return nil
+	return t.includeSSHConfig()
 }
 
 func (t *goteleport) Login() error {
