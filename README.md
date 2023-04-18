@@ -26,7 +26,7 @@ Add Homebrew Beliven tap with:
 Then install `tssh` CLI with:
 
 ```bash
-  brew install tssh
+  brew install beliven-it/tap/tssh
 ```
 
 ## Configuration
@@ -80,6 +80,10 @@ Clone the repository and run inside the folder:
 - `go build -ldflags="-X tssh/cmd.Version=1.0.0"`
 
 Run `./tssh` inside the folder to test the CLI.
+
+## Use as normal SFTP, SSH and other services
+
+You can also use as normal behavior. 
 
 ## Have found a bug?
 
