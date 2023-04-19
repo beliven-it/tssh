@@ -52,18 +52,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/config.yml)")
 
 	// Define the auth flag
-	rootCmd.PersistentFlags().StringVar(&auth, "auth", "", "The auth method to use. Default is local")
+	rootCmd.PersistentFlags().StringVar(&auth, "auth", "", "The auth method to use.")
 
-	// Get the bool auth
-	usePasswordless = viper.GetBool(defs.ConfigKeyTeleportPasswordless)
-
-	if auth == "local" {
-		usePasswordless = false
-	}
-
-	if auth == "passwordless" {
-		usePasswordless = true
-	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -78,4 +68,15 @@ func initConfig() {
 
 	configService := services.NewConfigService()
 	configService.Load(cfgFile)
+
+	// Get the bool auth
+	usePasswordless = viper.GetBool(defs.ConfigKeyTeleportPasswordless)
+
+	if auth == "local" {
+		usePasswordless = false
+	}
+
+	if auth == "passwordless" {
+		usePasswordless = true
+	}
 }
