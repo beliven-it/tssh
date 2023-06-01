@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"regexp"
 	"tssh/defs"
@@ -27,6 +28,15 @@ type Goteleport interface {
 }
 
 func (t *goteleport) includeSSHConfig() error {
+	// Check the ssh/config file exists
+	_, err := os.Stat(defs.ConfigSSHMainPath)
+	if errors.Is(err, os.ErrNotExist) {
+		_, e := os.Create(defs.ConfigSSHMainPath)
+		if e != nil {
+			return e
+		}
+	}
+
 	file, err := os.OpenFile(defs.ConfigSSHMainPath, os.O_RDWR, 0777)
 	if err != nil {
 		return err
