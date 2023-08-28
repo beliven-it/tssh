@@ -11,7 +11,6 @@ import (
 
 type connection struct {
 	sysadminRole string
-	sysadminUser string
 	goteleport   interfaces.Goteleport
 }
 
@@ -144,14 +143,8 @@ func NewConnectionService(user, proxy string, passwordless bool) (Connection, er
 		passwordless,
 	)
 
-	sysadminUser := viper.GetString(defs.ConfigKeyAdminUser)
-	if sysadminUser == "" {
-		sysadminUser = defs.DefaultTSHRole
-	}
-
 	return &connection{
 		goteleport:   goteleport,
 		sysadminRole: viper.GetString(defs.ConfigKeyAdminRole),
-		sysadminUser: sysadminUser,
 	}, err
 }

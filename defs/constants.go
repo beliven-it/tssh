@@ -14,8 +14,6 @@ func getHomePath() string {
 	return homePath
 }
 
-var ConfigKeyAdminUser = "admin_user"
-
 var ConfigKeyAdminRole = "admin_role"
 
 var ConfigKeyTeleportProxy = "teleport_proxy"
