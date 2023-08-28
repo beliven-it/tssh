@@ -63,9 +63,6 @@ fzf_options: "-i"
 # by root value.
 admin_role: "<YOUR PRIVILEGED ROLE IDENTIFIER>"
 
-# The privileged user. Usually is root
-admin_user: "root"
-
 # TSSH Easily allow to login or logout into the cluster.
 # compile the following values for handle login actions.
 teleport_proxy: "teleport.domain.com" 

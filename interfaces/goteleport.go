@@ -18,9 +18,11 @@ type goteleport struct {
 }
 
 type Goteleport interface {
-	ListRoles() ([]string, error)
 	ListHosts() ([]string, error)
 	ListLogins() ([]string, error)
+	ListRolesDetails() ([]types.TctlRole, error)
+	ShowRole(string) (types.TctlRole, error)
+	ListRoles() ([]string, error)
 	Login() error
 	Logout() error
 	CreateSshConfig() error
@@ -107,6 +109,37 @@ func (t *goteleport) ListHosts() ([]string, error) {
 	}
 
 	return hostnames, nil
+}
+
+func (t *goteleport) ListRolesDetails() ([]types.TctlRole, error) {
+	var roles []types.TctlRole
+	out, err := utils.Exec("tctl", "get", "role", "--format=json")
+	if err != nil {
+		return roles, err
+	}
+
+	err = json.Unmarshal(out, &roles)
+	if err != nil {
+		return roles, err
+	}
+
+	return roles, nil
+}
+
+func (t *goteleport) ShowRole(roleName string) (types.TctlRole, error) {
+	var roles []types.TctlRole
+	var role types.TctlRole
+	out, err := utils.Exec("tctl", "get", "role/"+roleName, "--format=json")
+	if err != nil {
+		return role, err
+	}
+
+	err = json.Unmarshal(out, &roles)
+	if err != nil {
+		return role, err
+	}
+
+	return roles[0], nil
 }
 
 func (t *goteleport) ListRoles() ([]string, error) {
