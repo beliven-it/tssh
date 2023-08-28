@@ -1,7 +1,6 @@
 package services
 
 import (
-	"strings"
 	"tssh/defs"
 	"tssh/interfaces"
 	"tssh/types"
@@ -21,31 +20,51 @@ type Connection interface {
 	Connect(string) error
 }
 
-func (s *connection) listConnectionsForSysadminUsers(list []string) ([]types.TsshConnection, error) {
+func (s *connection) listConnectionsForUsers() ([]types.TsshConnection, error) {
 	connections := []types.TsshConnection{}
 
-	for _, element := range list {
-		connections = append(connections, types.TsshConnection{
-			Host: element,
-			User: s.sysadminUser,
-		})
+	roles, err := s.goteleport.ListRolesDetails()
+	if err != nil {
+		return connections, err
+	}
+
+	for _, role := range roles {
+		for _, login := range role.Spec.Allow.Logins {
+			if role.Spec.Allow.NodeLabels.Hostname == "" {
+				continue
+			}
+
+			connections = append(connections, types.TsshConnection{
+				Host:  role.Spec.Allow.NodeLabels.Hostname,
+				User:  login,
+				Refer: role.Metadata.Name,
+			})
+		}
 	}
 
 	return connections, nil
 }
 
-func (s *connection) listConnectionsForUsers(list []string) ([]types.TsshConnection, error) {
+func (s *connection) listConnectionsForSysadminUsers() ([]types.TsshConnection, error) {
 	connections := []types.TsshConnection{}
-	for _, element := range list {
-		partials := strings.Split(element, ".")
-		if len(partials) < 2 {
-			continue
-		}
 
-		connections = append(connections, types.TsshConnection{
-			Host: partials[0],
-			User: strings.Join(partials[1:], "."),
-		})
+	hosts, err := s.goteleport.ListHosts()
+	if err != nil {
+		return nil, err
+	}
+
+	role, err := s.goteleport.ShowRole(s.sysadminRole)
+	if err != nil {
+		return connections, err
+	}
+
+	for _, element := range hosts {
+		for _, login := range role.Spec.Allow.Logins {
+			connections = append(connections, types.TsshConnection{
+				Host: element,
+				User: login,
+			})
+		}
 	}
 
 	return connections, nil
@@ -71,36 +90,47 @@ func (s *connection) getUniqueCollections(connections []types.TsshConnection) []
 }
 
 func (s *connection) ListConnections() ([]types.TsshConnection, error) {
-	roles, err := s.goteleport.ListRoles()
+	// Take roles from auth output
+	authRoles, err := s.goteleport.ListRoles()
 	if err != nil {
 		return nil, err
+	}
+
+	// Get all connections
+	connections, err := s.listConnectionsForUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	// Exlude connections not owned by user
+	var ownedConnections []types.TsshConnection
+	for _, role := range connections {
+		match := false
+		for _, authRole := range authRoles {
+			if authRole == role.Refer {
+				match = true
+			}
+		}
+
+		if match {
+			ownedConnections = append(ownedConnections, role)
+		}
 	}
 
 	// Check if the user have admin roles
-	haveAdminRole := utils.InSlice(s.sysadminRole, roles)
+	haveAdminRole := utils.InSlice(s.sysadminRole, authRoles)
 
-	// Get normal connetions
-	connections, err := s.listConnectionsForUsers(roles)
-	if err != nil {
-		return nil, err
-	}
-
-	// Get sysadmin connections
+	// If the user has admin permission the system must concatenate the additional connections
 	if s.sysadminRole != "" && haveAdminRole {
-		hosts, err := s.goteleport.ListHosts()
+		sysadminConnections, err := s.listConnectionsForSysadminUsers()
 		if err != nil {
 			return nil, err
 		}
 
-		sysadminConnections, err := s.listConnectionsForSysadminUsers(hosts)
-		if err != nil {
-			return nil, err
-		}
-
-		connections = append(connections, sysadminConnections...)
+		ownedConnections = append(ownedConnections, sysadminConnections...)
 	}
 
-	return s.getUniqueCollections(connections), err
+	return s.getUniqueCollections(ownedConnections), err
 }
 
 func (s *connection) Connect(connection string) error {
