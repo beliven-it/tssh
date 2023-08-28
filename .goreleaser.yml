@@ -19,6 +19,8 @@ brews:
     license: "MIT"
     dependencies:
       - name: fzf
+      - name: teleport
+      - name: tsh
   -
     name: tssh
     tap:
@@ -34,3 +36,5 @@ brews:
     license: "MIT"
     dependencies:
       - name: fzf
+      - name: teleport
+      - name: tsh
