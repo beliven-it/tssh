@@ -20,7 +20,6 @@ brews:
     dependencies:
       - name: fzf
       - name: teleport
-      - name: tsh
   -
     name: tssh
     tap:
@@ -37,4 +36,3 @@ brews:
     dependencies:
       - name: fzf
       - name: teleport
-      - name: tsh
