@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"regexp"
+	"tssh/cache"
 	"tssh/defs"
 	"tssh/types"
 	"tssh/utils"
@@ -15,7 +16,6 @@ type goteleport struct {
 	user         string
 	proxy        string
 	passwordless bool
-	cache        Cache
 }
 
 type Goteleport interface {
@@ -30,7 +30,8 @@ type Goteleport interface {
 	Connect(string) error
 }
 
-const rolesFile = "/tmp/roles.tssh.json"
+const rolesCacheKey = "/tmp/roles.tssh.json"
+const hostsCacheKey = "/tmp/hosts.tssh.json"
 
 func (t *goteleport) includeSSHConfig() error {
 	// Check the ssh/config file exists
@@ -95,7 +96,7 @@ func (t *goteleport) getStatus() error {
 }
 
 func (t *goteleport) ListHosts() ([]string, error) {
-	output, err := utils.Exec("tsh", "ls", "--format=json")
+	output, err := utils.ExecOrHitCache(hostsCacheKey, "tsh", "ls", "--format=json")
 	if err != nil {
 		return nil, err
 	}
@@ -118,13 +119,7 @@ func (t *goteleport) ListRoles() ([]types.TctlRole, error) {
 	var output []byte
 	var err error
 
-	// List the roles from file if any or fetch from tsh
-	if t.cache.Exist(rolesFile) {
-		output, err = t.cache.Get(rolesFile)
-	} else {
-		output, err = utils.Exec("tctl", "get", "role", "--format=json")
-		t.cache.Set(rolesFile, output)
-	}
+	output, err = utils.ExecOrHitCache(rolesCacheKey, "tctl", "get", "role", "--format=json")
 
 	var roles []types.TctlRole
 
@@ -231,12 +226,10 @@ func NewGoteleportNotAuthInterface() Goteleport {
 }
 
 func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, error) {
-	cache := NewCache()
 	i := goteleport{
 		user:         user,
 		proxy:        proxy,
 		passwordless: passwordless,
-		cache:        cache,
 	}
 
 	// Check the status of current account
@@ -249,7 +242,9 @@ func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, 
 		}
 
 		// Flush cache if any
-		i.cache.Flush(rolesFile)
+		c := cache.NewCache()
+		c.Flush(rolesCacheKey)
+		c.Flush(hostsCacheKey)
 	}
 
 	return &i, err
