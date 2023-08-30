@@ -22,7 +22,7 @@ type Connection interface {
 func (s *connection) listConnectionsForUsers() ([]types.TsshConnection, error) {
 	connections := []types.TsshConnection{}
 
-	roles, err := s.goteleport.ListRolesDetails()
+	roles, err := s.goteleport.ListRoles()
 	if err != nil {
 		return connections, err
 	}
@@ -52,7 +52,7 @@ func (s *connection) listConnectionsForSysadminUsers() ([]types.TsshConnection, 
 		return nil, err
 	}
 
-	role, err := s.goteleport.ShowRole(s.sysadminRole)
+	role, err := s.goteleport.FindRole(s.sysadminRole)
 	if err != nil {
 		return connections, err
 	}
@@ -90,7 +90,7 @@ func (s *connection) getUniqueCollections(connections []types.TsshConnection) []
 
 func (s *connection) ListConnections() ([]types.TsshConnection, error) {
 	// Take roles from auth output
-	authRoles, err := s.goteleport.ListRoles()
+	authRoles, err := s.goteleport.ListRolesForUser()
 	if err != nil {
 		return nil, err
 	}

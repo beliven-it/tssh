@@ -15,19 +15,22 @@ type goteleport struct {
 	user         string
 	proxy        string
 	passwordless bool
+	cache        Cache
 }
 
 type Goteleport interface {
 	ListHosts() ([]string, error)
 	ListLogins() ([]string, error)
-	ListRolesDetails() ([]types.TctlRole, error)
-	ShowRole(string) (types.TctlRole, error)
-	ListRoles() ([]string, error)
+	ListRoles() ([]types.TctlRole, error)
+	FindRole(string) (types.TctlRole, error)
+	ListRolesForUser() ([]string, error)
 	Login() error
 	Logout() error
 	CreateSshConfig() error
 	Connect(string) error
 }
+
+const rolesFile = "/tmp/roles.tssh.json"
 
 func (t *goteleport) includeSSHConfig() error {
 	// Check the ssh/config file exists
@@ -111,14 +114,25 @@ func (t *goteleport) ListHosts() ([]string, error) {
 	return hostnames, nil
 }
 
-func (t *goteleport) ListRolesDetails() ([]types.TctlRole, error) {
+func (t *goteleport) ListRoles() ([]types.TctlRole, error) {
+	var output []byte
+	var err error
+
+	// List the roles from file if any or fetch from tsh
+	if t.cache.Exist(rolesFile) {
+		output, err = t.cache.Get(rolesFile)
+	} else {
+		output, err = utils.Exec("tctl", "get", "role", "--format=json")
+		t.cache.Set(rolesFile, output)
+	}
+
 	var roles []types.TctlRole
-	out, err := utils.Exec("tctl", "get", "role", "--format=json")
+
 	if err != nil {
 		return roles, err
 	}
 
-	err = json.Unmarshal(out, &roles)
+	err = json.Unmarshal(output, &roles)
 	if err != nil {
 		return roles, err
 	}
@@ -126,23 +140,24 @@ func (t *goteleport) ListRolesDetails() ([]types.TctlRole, error) {
 	return roles, nil
 }
 
-func (t *goteleport) ShowRole(roleName string) (types.TctlRole, error) {
-	var roles []types.TctlRole
-	var role types.TctlRole
-	out, err := utils.Exec("tctl", "get", "role/"+roleName, "--format=json")
+func (t *goteleport) FindRole(roleName string) (types.TctlRole, error) {
+	var matchRole types.TctlRole
+
+	roles, err := t.ListRoles()
 	if err != nil {
-		return role, err
+		return matchRole, err
 	}
 
-	err = json.Unmarshal(out, &roles)
-	if err != nil {
-		return role, err
+	for _, role := range roles {
+		if role.Metadata.Name == roleName {
+			matchRole = role
+		}
 	}
 
-	return roles[0], nil
+	return matchRole, nil
 }
 
-func (t *goteleport) ListRoles() ([]string, error) {
+func (t *goteleport) ListRolesForUser() ([]string, error) {
 	return t.status.Roles, nil
 }
 
@@ -216,10 +231,12 @@ func NewGoteleportNotAuthInterface() Goteleport {
 }
 
 func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, error) {
+	cache := NewCache()
 	i := goteleport{
 		user:         user,
 		proxy:        proxy,
 		passwordless: passwordless,
+		cache:        cache,
 	}
 
 	// Check the status of current account
@@ -230,6 +247,9 @@ func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, 
 		if err != nil {
 			return &i, err
 		}
+
+		// Flush cache if any
+		i.cache.Flush(rolesFile)
 	}
 
 	return &i, err
