@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"tssh/cache"
 
 	"github.com/spf13/viper"
 )
@@ -80,6 +81,22 @@ func ExecStdout(command string, args ...string) error {
 	}
 
 	return nil
+}
+
+func ExecOrHitCache(key string, command string, args ...string) ([]byte, error) {
+	c := cache.NewCache()
+
+	if c.Exist(key) {
+		return c.Get(key)
+	} else {
+		output, err := Exec(command, args...)
+		if err != nil {
+			return nil, err
+		}
+
+		c.Set(key, output)
+		return output, err
+	}
 }
 
 func ExecDevNull(command string, args ...string) error {
