@@ -39,5 +39,3 @@ var ConfigSSHMainPath = fmt.Sprintf("%s/.ssh/config", HomePath)
 var ConfigSSHAppPath = fmt.Sprintf("%s/.ssh/%s", HomePath, ConfigSSHAppName)
 
 var ConfigFilePath = fmt.Sprintf("%s/%s.%s", ConfigFolderPath, ConfigFileName, ConfigFileExtension)
-
-const DefaultTSHRole = "root"
