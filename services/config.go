@@ -4,15 +4,13 @@ import (
 	"crypto/md5"
 	"os"
 	"path/filepath"
-
 	"tssh/defs"
 	"tssh/templates"
 
 	"github.com/spf13/viper"
 )
 
-type config struct {
-}
+type config struct{}
 
 type Config interface {
 	IsInitialized() bool
@@ -50,7 +48,7 @@ func (s *config) Init() error {
 		return nil
 	}
 
-	err := os.MkdirAll(filepath.Dir(defs.ConfigFilePath), 0755)
+	err := os.MkdirAll(filepath.Dir(defs.ConfigFilePath), 0600)
 	if err != nil {
 		return err
 	}
@@ -59,7 +57,7 @@ func (s *config) Init() error {
 	if err == nil {
 		return nil
 	} else if os.IsNotExist(err) {
-		err := os.WriteFile(defs.ConfigFilePath, []byte(templates.Config), 0755)
+		err := os.WriteFile(defs.ConfigFilePath, []byte(templates.Config), 0600)
 		if err != nil {
 			return err
 		}
