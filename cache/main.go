@@ -24,7 +24,7 @@ func (c *cache) Exist(key string) bool {
 }
 
 func (c *cache) Set(key string, data []byte) error {
-	return os.WriteFile(key, data, 0777)
+	return os.WriteFile(key, data, 0600)
 }
 
 func (c *cache) Get(key string) ([]byte, error) {
