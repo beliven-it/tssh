@@ -11,6 +11,8 @@ import (
 	"tssh/utils"
 )
 
+const jsonFlag = "--format=json"
+
 type goteleport struct {
 	status       types.GoteleportActive
 	user         string
@@ -79,7 +81,7 @@ func (t *goteleport) includeSSHConfig() error {
 }
 
 func (t *goteleport) getStatus() error {
-	output, err := utils.Exec("tsh", "status", "--format=json")
+	output, err := utils.Exec("tsh", "status", jsonFlag)
 	if err != nil {
 		return err
 	}
@@ -96,7 +98,7 @@ func (t *goteleport) getStatus() error {
 }
 
 func (t *goteleport) ListHosts() ([]string, error) {
-	output, err := utils.ExecOrHitCache(hostsCacheKey, "tsh", "ls", "--format=json")
+	output, err := utils.ExecOrHitCache(hostsCacheKey, "tsh", "ls", jsonFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +121,7 @@ func (t *goteleport) ListRoles() ([]types.TctlRole, error) {
 	var output []byte
 	var err error
 
-	output, err = utils.ExecOrHitCache(rolesCacheKey, "tctl", "get", "role", "--format=json")
+	output, err = utils.ExecOrHitCache(rolesCacheKey, "tctl", "get", "role", jsonFlag)
 
 	var roles []types.TctlRole
 
