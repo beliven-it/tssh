@@ -45,7 +45,7 @@ func (t *goteleport) includeSSHConfig() error {
 		}
 	}
 
-	file, err := os.OpenFile(defs.ConfigSSHMainPath, os.O_RDWR, 0777)
+	file, err := os.OpenFile(defs.ConfigSSHMainPath, os.O_RDWR, 0600)
 	if err != nil {
 		return err
 	}
