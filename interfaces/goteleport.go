@@ -44,6 +44,7 @@ func (t *goteleport) stripSecurityCheckError(data []byte, err error) ([]byte, er
 	// This error broke the unmarshal of JSON ouput and the data cannot be cache because
 	// because for the system is an error after all.
 	// This cause performance issues.
+	// The headless option cannot be used in all commands without a detailed refactor
 	rgx := regexp.MustCompile(`A security patch is available for Teleport. Please upgrade your Cluster to v.*? or newer.`)
 	if !rgx.Match([]byte(err.Error())) {
 		if err != nil {
