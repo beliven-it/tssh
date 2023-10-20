@@ -119,7 +119,8 @@ func (t *goteleport) includeSSHConfig() error {
 }
 
 func (t *goteleport) getStatus() error {
-	output, err := t.execOrHitCache("tsh", "tsh", "status", "--format=json")
+	output, err := utils.Exec("tsh", "status", "--format=json")
+	output, err = t.stripSecurityCheckError(output, err)
 	if err != nil {
 		return err
 	}
