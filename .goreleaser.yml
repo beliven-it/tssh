@@ -6,7 +6,7 @@ builds:
 brews:
   -
     name: tssh@{{.Version}}
-    tap:
+    repository:
       owner: beliven-it
       name: homebrew-tap
     folder: Formula
@@ -22,7 +22,7 @@ brews:
       - name: teleport
   -
     name: tssh
-    tap:
+    repository:
       owner: beliven-it
       name: homebrew-tap
     folder: Formula
