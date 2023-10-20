@@ -79,7 +79,7 @@ func (t *goteleport) includeSSHConfig() error {
 }
 
 func (t *goteleport) getStatus() error {
-	output, err := utils.Exec("tsh", "status", "--format=json")
+	output, err := utils.Exec("tsh", "status", "--format=json", "--headless")
 	if err != nil {
 		return err
 	}
