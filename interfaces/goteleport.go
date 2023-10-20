@@ -16,6 +16,7 @@ type goteleport struct {
 	user         string
 	proxy        string
 	passwordless bool
+	cache        cache.Cache
 }
 
 type Goteleport interface {
@@ -32,6 +33,45 @@ type Goteleport interface {
 
 const rolesCacheKey = "/tmp/roles.tssh.json"
 const hostsCacheKey = "/tmp/hosts.tssh.json"
+
+func (t *goteleport) stripSecurityCheckError(data []byte, err error) ([]byte, error) {
+	if err == nil {
+		return data, err
+	}
+
+	// This command search for an error message
+	// that teleport generate when a security patch is available.
+	// This error broke the unmarshal of JSON ouput and the data cannot be cache because
+	// because for the system is an error after all.
+	// This cause performance issues.
+	rgx := regexp.MustCompile(`A security patch is available for Teleport. Please upgrade your Cluster to v.*? or newer.`)
+	if !rgx.Match([]byte(err.Error())) {
+		if err != nil {
+			return data, err
+		}
+	}
+
+	data = rgx.ReplaceAll(data, []byte(""))
+
+	return data, nil
+}
+
+func (t *goteleport) execOrHitCache(key string, command string, args ...string) ([]byte, error) {
+	c := cache.NewCache()
+
+	if c.Exist(key) {
+		return c.Get(key)
+	} else {
+		output, err := utils.Exec(command, args...)
+		output, err = t.stripSecurityCheckError(output, err)
+		if err != nil {
+			return output, err
+		}
+
+		c.Set(key, output)
+		return output, err
+	}
+}
 
 func (t *goteleport) includeSSHConfig() error {
 	// Check the ssh/config file exists
@@ -79,7 +119,7 @@ func (t *goteleport) includeSSHConfig() error {
 }
 
 func (t *goteleport) getStatus() error {
-	output, err := utils.Exec("tsh", "status", "--format=json", "--headless")
+	output, err := t.execOrHitCache("tsh", "tsh", "status", "--format=json")
 	if err != nil {
 		return err
 	}
@@ -96,7 +136,7 @@ func (t *goteleport) getStatus() error {
 }
 
 func (t *goteleport) ListHosts() ([]string, error) {
-	output, err := utils.ExecOrHitCache(hostsCacheKey, "tsh", "ls", "--format=json")
+	output, err := t.execOrHitCache(hostsCacheKey, "tsh", "ls", "--format=json")
 	if err != nil {
 		return nil, err
 	}
@@ -118,11 +158,9 @@ func (t *goteleport) ListHosts() ([]string, error) {
 func (t *goteleport) ListRoles() ([]types.TctlRole, error) {
 	var output []byte
 	var err error
-
-	output, err = utils.ExecOrHitCache(rolesCacheKey, "tctl", "get", "role", "--format=json")
-
 	var roles []types.TctlRole
 
+	output, err = t.execOrHitCache(rolesCacheKey, "tctl", "get", "role", "--format=json")
 	if err != nil {
 		return roles, err
 	}
@@ -230,6 +268,7 @@ func NewGoteleportInterface(user, proxy string, passwordless bool) (Goteleport, 
 		user:         user,
 		proxy:        proxy,
 		passwordless: passwordless,
+		cache:        cache.NewCache(),
 	}
 
 	// Check the status of current account
