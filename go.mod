@@ -3,7 +3,7 @@ module tssh
 go 1.19
 
 require (
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
 )
 
